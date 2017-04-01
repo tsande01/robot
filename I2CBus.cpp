@@ -1,7 +1,6 @@
 #include "I2CBus.h"
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
-#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
