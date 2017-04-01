@@ -16,7 +16,11 @@
 #define M_PI 3.14159265358979323846
 #define GRAV 32.174 //GRAVITY ACCELERATION IN FT/S^2
 #define LENGTH 3.25 //HALF HEIGHT IN FT
-#define CIRC 3.272 //CIRCUMFERENCE
+#define CIRC 3.272 //CIRCUMFERENCE IN FT
+#define DIAMETER 1.306  //WHEEL DIAMETER IN FT
+#define PWM_MAX 890 //MAX ALLOWABLE PWM IN
+#define PWM_MIN 375 //MIN ALLOWABLE PWM IN
+
 
 #define DT 0.02
 #define AA 0.75
@@ -31,12 +35,12 @@ int mymillis()
 }
 		
 int main(int argc, char** argv) {
-	
-	float rate_gyr_x = 0.0;
-	float gyroXangle = 0.0;
-	float AccXAngle = 0.0;
-	float CFangleX = 0.0;
-	float AngularAcceleration = 0.0;
+
+	float gyroscopeRateX = 0.0;
+	float gyroscopeAngleX = 0.0;
+	float accelerationAngleX = 0.0;
+	float complimentaryFilterAngleX = 0.0;
+	float angularAcceleration = 0.0;
 	
 	int startInt = mymillis();
 	int endInt = 0;
@@ -56,8 +60,8 @@ int main(int argc, char** argv) {
 	pinMode (1, PWM_OUTPUT) ;
 	
 	int val = 0;
-	int velocity1 = 0;
-	int velocity2 = 0;
+	int velocityOld = 0;
+	int velocityNew = 0;
 	int acceleration = 0;
 	
 	int i = 0;
@@ -67,39 +71,39 @@ int main(int argc, char** argv) {
 		gyro.read();
 		accel.readAcc();
 		
-		rate_gyr_x = (float) (gyro.g[0] * G_GAIN);
-		gyroXangle += (float) rate_gyr_x*DT;  //implement calibration
-		AccXAngle = (float) ((atan2(accel.a[1], accel.a[2]) + M_PI) * RAD_TO_DEG);
-		AngularAcceleration = (float) (accel.a[1] * A_GAIN * RAD_TO_DEG / 400); //implement calibration
+		gyroscopeRateX = (float) (gyro.g[0] * G_GAIN);
+		gyroscopeAngleX += gyroscopeRateX*DT;  //implement calibration
+		accelerationAngleX = (float) ((atan2(accel.a[1], accel.a[2]) + M_PI) * RAD_TO_DEG);
+		angularAcceleration = (float) (accel.a[1] * A_GAIN * RAD_TO_DEG / 400); //implement calibration
 			
-		if(AccXAngle >180)
+		if(accelerationAngleX >180)
 		{
-			AccXAngle -= (float)360.0;
+			accelerationAngleX -= (float)360.0;
 		}
 		//Complementary Filter Angle
-		CFangleX= (float) ((AA) * (CFangleX + rate_gyr_x * DT) + (1 - AA) * AccXAngle);
+		complimentaryFilterAngleX = (float) ((AA) * (complimentaryFilterAngleX + gyroscopeRateX * DT) + (1 - AA) * accelerationAngleX);
 		
 		//Calculate Velocity
-		acceleration = (int) (GRAV * tan(CFangleX * M_PI / 180) - LENGTH * AngularAcceleration / cos(CFangleX * M_PI / 180));
-		velocity2 = acceleration+velocity1;
-		val = (int) ((velocity2 / CIRC) * 1.306 + 375.26);
+		acceleration = (int) (GRAV * tan(complimentaryFilterAngleX * M_PI / 180) - LENGTH * angularAcceleration / cos(complimentaryFilterAngleX * M_PI / 180));
+		velocityOld = acceleration + velocityNew;
+		val = (int) ((velocityNew / CIRC) * DIAMETER + 375.26);
 
+        //Threshold PWM Input
+		if(val < PWM_MIN)
+			val = PWM_MIN;
+		if(val > PWM_MAX)
+			val = PWM_MAX;
 		
-		if(val<375)
-			val = 375;
-		if(val>890)
-			val = 890;
-		
-		velocity1 = (int) ((val - 375.26) * CIRC / 1.306);
+		velocityOld = (int) ((val - 375.26) * CIRC / 1.306);
 		
 		pwmWrite(1,val);
 		
-		cout<<CFangleX<<endl;
+		cout<<complimentaryFilterAngleX<<endl;
 		i++;
 		
-		while(mymillis() -startInt < DT*1000)
+		while(mymillis() - startInt < DT*1000)
 		{
-			sleep(.0001);
+			sleep(.00001);
 		}
         system("clear");
 	}
