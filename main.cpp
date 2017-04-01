@@ -67,22 +67,22 @@ int main(int argc, char** argv) {
 		gyro.read();
 		accel.readAcc();
 		
-		rate_gyr_x = (float) gyro.g[0]*G_GAIN;
+		rate_gyr_x = (float) (gyro.g[0] * G_GAIN);
 		gyroXangle += (float) rate_gyr_x*DT;  //implement calibration
-		AccXAngle = (float) (atan2(accel.a[1],accel.a[2])+M_PI)*RAD_TO_DEG;
-		AngularAcceleration = (float) accel.a[1]*A_GAIN*RAD_TO_DEG/400; //implement calibration
+		AccXAngle = (float) ((atan2(accel.a[1], accel.a[2]) + M_PI) * RAD_TO_DEG);
+		AngularAcceleration = (float) (accel.a[1] * A_GAIN * RAD_TO_DEG / 400); //implement calibration
 			
 		if(AccXAngle >180)
 		{
 			AccXAngle -= (float)360.0;
 		}
 		//Complementary Filter Angle
-		CFangleX=(AA)*(CFangleX+rate_gyr_x*DT) + (1-AA) * AccXAngle;
+		CFangleX= (float) ((AA) * (CFangleX + rate_gyr_x * DT) + (1 - AA) * AccXAngle);
 		
 		//Calculate Velocity
-		acceleration = GRAV*tan(CFangleX*M_PI/180)-LENGTH*AngularAcceleration/cos(CFangleX*M_PI/180);
+		acceleration = (int) (GRAV * tan(CFangleX * M_PI / 180) - LENGTH * AngularAcceleration / cos(CFangleX * M_PI / 180));
 		velocity2 = acceleration+velocity1;
-		val = (velocity2/CIRC)*1.306+375.26;
+		val = (int) ((velocity2 / CIRC) * 1.306 + 375.26);
 
 		
 		if(val<375)
@@ -90,16 +90,16 @@ int main(int argc, char** argv) {
 		if(val>890)
 			val = 890;
 		
-		velocity1 = (val-375.26)*CIRC/1.306;
+		velocity1 = (int) ((val - 375.26) * CIRC / 1.306);
 		
 		pwmWrite(1,val);
 		
-		cout<<CFangleX<<"   "<<AngularAcceleration<<"    "<<acceleration<<"     "<<velocity2<<"     "<<val<<endl;
+		//cout<<CFangleX<<"   "<<AngularAcceleration<<"    "<<acceleration<<"     "<<velocity2<<"     "<<val<<endl;
 		i++;
 		
 		while(mymillis() -startInt < DT*1000)
 		{
-			usleep(100);
+			sleep(100);
 		}		
 	}
 	pwmWrite(1,0);
