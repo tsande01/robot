@@ -94,7 +94,7 @@ int main(int argc, char** argv) {
 		
 		pwmWrite(1,val);
 		
-		//cout<<CFangleX<<"   "<<AngularAcceleration<<"    "<<acceleration<<"     "<<velocity2<<"     "<<val<<endl;
+		cout<<CFangleX<<"   "<<AngularAcceleration<<"    "<<acceleration<<"     "<<velocity2<<"     "<<val<<endl;
 		i++;
 		
 		while(mymillis() -startInt < DT*1000)
