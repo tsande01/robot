@@ -1,7 +1,6 @@
 #include <iostream>
-#include "L3G.cpp"
-#include "LSM303.cpp"
-#include "I2CBus.cpp"
+#include "L3G.h"
+#include "LSM303.h"
 #include "linux/i2c-dev.h"
 #include <unistd.h>
 #include <sys/time.h>
