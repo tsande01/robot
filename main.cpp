@@ -99,7 +99,7 @@ int main(int argc, char** argv) {
 		
 		while(mymillis() -startInt < DT*1000)
 		{
-			sleep(100);
+			sleep(.000001);
 		}		
 	}
 	pwmWrite(1,0);
