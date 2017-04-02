@@ -6,9 +6,6 @@
 #include <sys/time.h>
 #include <math.h>
 #include <wiringPi.h>
-#include <stdlib.h>
-#include <stdint.h>
-#include <sys/types.h>
 
 #define G_GAIN 0.070
 #define A_GAIN 0.0573
@@ -17,7 +14,6 @@
 #define GRAV 32.174 //GRAVITY ACCELERATION IN FT/S^2
 #define LENGTH 3.25 //HALF HEIGHT IN FT
 #define CIRC 3.272 //CIRCUMFERENCE IN FT
-#define DIAMETER 1.306  //WHEEL DIAMETER IN FT
 #define PWM_MAX 890 //MAX ALLOWABLE PWM IN
 #define PWM_MIN 375 //MIN ALLOWABLE PWM IN
 
@@ -57,9 +53,9 @@ int main(int argc, char** argv) {
 	//Set up PWM
 	if (wiringPiSetup () == -1)
 		exit (1) ;
-	pinMode (1, PWM_OUTPUT) ;
-	
-	int val = 0;
+	pinMode (1, PWM_OUTPUT) ; //Green goes to GPIO18, black goes to adjacent ground
+
+	int pwmValue = 0;
 	int velocityOld = 0;
 	int velocityNew = 0;
 	int acceleration = 0;
@@ -85,20 +81,20 @@ int main(int argc, char** argv) {
 		
 		//Calculate Velocity
 		acceleration = (int) (GRAV * tan(complimentaryFilterAngleX * M_PI / 180) - LENGTH * angularAcceleration / cos(complimentaryFilterAngleX * M_PI / 180));
-		velocityOld = acceleration + velocityNew;
-		val = (int) ((velocityNew / CIRC) * DIAMETER + 375.26);
+		velocityNew = acceleration + velocityOld;
+		pwmValue = (int) ((velocityNew / CIRC) * 1.306 + 375.26); //Slope and Intercept for pwm -> velocity line
 
         //Threshold PWM Input
-		if(val < PWM_MIN)
-			val = PWM_MIN;
-		if(val > PWM_MAX)
-			val = PWM_MAX;
+		if(pwmValue < PWM_MIN)
+			pwmValue = PWM_MIN;
+		if(pwmValue > PWM_MAX)
+			pwmValue = PWM_MAX;
 		
-		velocityOld = (int) ((val - 375.26) * CIRC / 1.306);
+		velocityOld = velocityNew;
 		
-		pwmWrite(1,val);
+		pwmWrite(1,pwmValue);
 		
-		cout<<complimentaryFilterAngleX<<endl;
+		cout<<complimentaryFilterAngleX<<"  "<<pwmValue<<endl;
 		i++;
 		
 		while(mymillis() - startInt < DT*1000)
