@@ -84,6 +84,7 @@ int main(int argc, char** argv) {
 		velocityNew = acceleration + velocityOld;
 		pwmValue = (int) ((velocityNew / CIRC) * 1.306 + 375.26); //Slope and Intercept for pwm -> velocity line
 
+        cout << pwmValue <<endl;
         //Threshold PWM Input
 		if(pwmValue < PWM_MIN)
 			pwmValue = PWM_MIN;
@@ -94,7 +95,7 @@ int main(int argc, char** argv) {
 		
 		pwmWrite(1,pwmValue);
 		
-		cout<<complimentaryFilterAngleX<<"  "<<pwmValue<<endl;
+		//cout<<complimentaryFilterAngleX<<"  "<<pwmValue<<endl;
 		i++;
 		
 		while(mymillis() - startInt < DT*1000)
