@@ -1,6 +1,7 @@
 #ifndef _I2CBus_h
 #define _I2CBus_h
 
+#include <unistd.h>
 #include <stdint.h>
 #include "exceptions.h"
 
