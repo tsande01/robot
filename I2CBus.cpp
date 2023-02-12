@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <unistd.h>
+
 
 I2CBus::I2CBus(const char * deviceName)
 {
